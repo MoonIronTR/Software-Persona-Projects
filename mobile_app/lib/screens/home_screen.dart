@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../data/dummy_data.dart';
 import '../models/product.dart';
 import 'product_detail_screen.dart';
+import '../data/cart_manager.dart';
+import 'cart_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -64,9 +66,67 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black87,
+        actions: [
+          ListenableBuilder(
+            listenable: cartManager,
+            builder: (context, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart_outlined),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CartScreen()),
+                      );
+                    },
+                  ),
+                  if (cartManager.totalItems > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${cartManager.totalItems}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [
+          // Banner Görseli
+          Container(
+            width: double.infinity,
+            color: Colors.white,
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Image.network(
+              'https://wantapi.com/assets/banner.png',
+              fit: BoxFit.fitWidth,
+              errorBuilder: (context, error, stackTrace) => Container(
+                height: 150,
+                color: Colors.blue[50],
+                child: const Center(child: Text('Banner Yüklenemedi')),
+              ),
+            ),
+          ),
           // Arama Çubuğu
           Container(
             color: Colors.white,
@@ -250,16 +310,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                         fontSize: 16,
                                       ),
                                     ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.blueAccent,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      padding: const EdgeInsets.all(6),
-                                      child: const Icon(
-                                        Icons.add_shopping_cart,
-                                        size: 16,
-                                        color: Colors.white,
+                                    GestureDetector(
+                                      onTap: () {
+                                        cartManager.addToCart(product);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('${product.title} sepete eklendi!'),
+                                            duration: const Duration(seconds: 1),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.blueAccent,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        padding: const EdgeInsets.all(6),
+                                        child: const Icon(
+                                          Icons.add_shopping_cart,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ],

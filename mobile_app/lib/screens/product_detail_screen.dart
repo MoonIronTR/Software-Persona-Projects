@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
+import '../data/cart_manager.dart';
+import 'cart_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -11,12 +13,8 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  int _cartItemCount = 0;
-
   void _addToCart() {
-    setState(() {
-      _cartItemCount++;
-    });
+    cartManager.addToCart(widget.product);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Ürün sepete eklendi!'),
@@ -37,42 +35,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         elevation: 0,
         centerTitle: true,
         actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart_outlined, size: 28),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Sepetinizde $_cartItemCount ürün var.'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-              ),
-              if (_cartItemCount > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '$_cartItemCount',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+          ListenableBuilder(
+            listenable: cartManager,
+            builder: (context, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart_outlined, size: 28),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CartScreen()),
+                      );
+                    },
                   ),
-                ),
-            ],
+                  if (cartManager.totalItems > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${cartManager.totalItems}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           const SizedBox(width: 8),
         ],
